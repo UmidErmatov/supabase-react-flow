@@ -53,6 +53,7 @@ export default function GPTChart() {
     const [nodes, setNodes] = useState<any[]>([]);
     const [edges, setEdges] = useState<any[]>([]);
     const [expandedNodes, setExpandedNodes] = useState(new Set());
+    const [loadingNodeId, setLoadingNodeId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchAndExpandNode();
@@ -62,7 +63,7 @@ export default function GPTChart() {
         const { name, ...restNode } = node
         const mainNode = {
             id: `${node.id}`,
-            data: { label: name, ...restNode },
+            data: { label: loadingNodeId === node.id ? 'Loading...' : name, ...restNode },
             position: node.level === 0 ? { x: 0, y: 0 } : undefined,
         };
 
@@ -92,7 +93,7 @@ export default function GPTChart() {
 
     const fetchAndExpandNode = async (nodeId?: string) => {
         if (nodeId && expandedNodes.has(nodeId)) return; // Skip if already expanded
-
+        setLoadingNodeId(nodeId || 'root');
         const data = await fetchNodeData(nodeId);
         if (nodeId) {
             addNodeAndEdges(data.person, data.reports);
@@ -101,36 +102,8 @@ export default function GPTChart() {
             // Initial fetch: CEO and direct reports
             addNodeAndEdges(data.ceo, data.reports);
         }
-    };
 
-    const collapseNode = (nodeId) => {
-        // Recursive function to find all descendants of a node
-        const findDescendants = (parentId) => {
-            const children = nodes.filter(node => node.parent_id === parentId);
-            let allDescendants = [...children];
-
-            children.forEach(child => {
-                allDescendants = [...allDescendants, ...findDescendants(child.id)];
-            });
-
-            return allDescendants;
-        };
-
-        const descendants = findDescendants(nodeId).map(node => node.id);
-
-        // Filter out child nodes and edges of the collapsed node
-        setNodes((prevNodes) =>
-            prevNodes.filter((node) => !descendants.includes(node.id))
-        );
-        setEdges((prevEdges) =>
-            prevEdges.filter((edge) => !descendants.includes(edge.target))
-        );
-
-        setExpandedNodes((prev) => {
-            const newExpandedNodes = new Set(prev);
-            newExpandedNodes.delete(nodeId); // Remove node from expanded set
-            return newExpandedNodes;
-        });
+        setLoadingNodeId(null);
     };
 
     const hide = (hidden, childEdgeID, childNodeID) => (nodeOrEdge) => {
@@ -200,7 +173,13 @@ export default function GPTChart() {
 
 
     const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-        nodes,
+        nodes.map(node => ({
+            ...node,
+            data: {
+                ...node.data,
+                label: loadingNodeId === node.id ? 'Loading...' : node.data.label,
+            }
+        })),
         edges
     );
 
