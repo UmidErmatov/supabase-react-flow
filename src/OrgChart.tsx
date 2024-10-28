@@ -49,7 +49,7 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
     return { nodes: newNodes, edges };
 };
 
-export default function GPTChart() {
+export default function OrgChart() {
     const [nodes, setNodes] = useState<any[]>([]);
     const [edges, setEdges] = useState<any[]>([]);
     const [expandedNodes, setExpandedNodes] = useState(new Set());
@@ -70,7 +70,6 @@ export default function GPTChart() {
         const newNodes: any = [mainNode];
         const newEdges: any[] = [];
 
-        // Add each report node and its edge
         reports.forEach((report) => {
             const { name, ...restReport } = report
             newNodes.push({
@@ -92,14 +91,13 @@ export default function GPTChart() {
     };
 
     const fetchAndExpandNode = async (nodeId?: string) => {
-        if (nodeId && expandedNodes.has(nodeId)) return; // Skip if already expanded
+        if (nodeId && expandedNodes.has(nodeId)) return;
         setLoadingNodeId(nodeId || 'root');
         const data = await fetchNodeData(nodeId);
         if (nodeId) {
             addNodeAndEdges(data.person, data.reports);
             setExpandedNodes((prev) => new Set(prev).add(nodeId));
         } else {
-            // Initial fetch: CEO and direct reports
             addNodeAndEdges(data.ceo, data.reports);
         }
 
@@ -156,7 +154,7 @@ export default function GPTChart() {
         setEdges((edge) => edge.map(hide(true, childEdgeID, childNodeID)));
         setExpandedNodes((prev) => {
             const newExpandedNodes = new Set(prev);
-            newExpandedNodes.delete(currentNodeID); // Remove node from expanded set
+            newExpandedNodes.delete(currentNodeID);
             return newExpandedNodes;
         });
     };
@@ -166,7 +164,6 @@ export default function GPTChart() {
         if (expandedNodes.has(node.id)) {
             nodeClick(node)
         } else {
-            // Expand and fetch new children if node is not expanded
             fetchAndExpandNode(node.id);
         }
     };

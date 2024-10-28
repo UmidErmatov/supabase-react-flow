@@ -1,8 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import {createClient} from "npm:@supabase/supabase-js"
 
-// const supabase = createClient(supabaseUrl, supabaseKey);
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey',
@@ -27,7 +25,6 @@ async function getEmployee(supabaseClient: SupabaseClient, id: string) {
   )
     };
 
-    // Fetch direct reports
     const { data: reports, error: reportsError } = await supabaseClient
         .from('employees')
         .select('*')
@@ -65,7 +62,6 @@ async function getCEO(supabaseClient: SupabaseClient) {
   )
     };
 
-    // Fetch direct reports
     const { data: reports, error: reportsError } = await supabaseClient
         .from('employees')
         .select('*')
